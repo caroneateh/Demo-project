@@ -27,27 +27,28 @@ resource "aws_subnet" "BOA-private" {
   }
 }
 
-data "aws_vpc" "Default" {
-  id = "vpc-099024c870ce860ba"
+resource "aws_internet_gateway" "BOA-igw" {
+  vpc_id = aws_vpc.BOA.id
+  tags = {
+    Name = "BOA-igw"
+  }
 }
 
-resource "aws_subnet" "Default-1" {
-  vpc_id            = data.aws_vpc.Default.id
-  availability_zone = var.availability_zone
-  cidr_block        = "172.31.128.0/24"
+resource "aws_default_route_table" "BOA-default" {
+  default_route_table_id = aws_vpc.BOA.default_route_table_id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.BOA-igw.id
+  }
+   tags = {
+    Name = "BOA-default"
+  }
 }
 
-output "vpc-cidr" {
-    value = aws_vpc.BOA.id
-  }
-
-  output "vpc-subnet" {
-    value = aws_subnet.BOA-private.id
-  }
-
-  variable "vpc_cidr_block" {
+variable "vpc_cidr_block" {
     description = "vpc cidr block"
-  }
+}
 
   variable "subnet_cidr_block" {
     description = "subnet cidr block"
@@ -56,6 +57,8 @@ output "vpc-cidr" {
   variable "availability_zone" {
     description = "availability zone"
   }
+
+  
 
 
   
